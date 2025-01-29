@@ -1,6 +1,10 @@
 import React from 'react';
 
 const PredictionResults = ({ predictions }) => {
+  if (!predictions || predictions.length === 0) {
+    return null;
+  }
+
   return (
     <div className="mt-6">
       <h2 className="text-xl font-bold mb-4">7-Day Weather Forecast</h2>
@@ -8,8 +12,8 @@ const PredictionResults = ({ predictions }) => {
         {predictions.map((pred, i) => (
           <div key={i} className="bg-white p-4 rounded-lg shadow">
             <h3 className="font-semibold mb-2">{pred.day.toLocaleDateString()}</h3>
-            <p>Temperature: {pred.temp.toFixed(1)}°C</p>
-            <p>Humidity: {pred.rhum.toFixed(1)}%</p>
+            <p>Temperature: {pred.temp}°C</p>
+            <p>Humidity: {pred.rhum}%</p>
           </div>
         ))}
       </div>

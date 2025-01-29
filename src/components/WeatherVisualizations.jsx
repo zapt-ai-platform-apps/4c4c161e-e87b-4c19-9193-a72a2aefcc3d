@@ -1,63 +1,40 @@
 import React from 'react';
-import { VictoryChart, VictoryLine, VictoryAxis, VictoryTheme } from 'victory';
+import * as Sentry from '@sentry/browser';
+import BoxPlots from './WeatherVisualizations/BoxPlots';
+import Histograms from './WeatherVisualizations/Histograms';
+import ScatterPlot from './WeatherVisualizations/ScatterPlot';
+import TimeSeries from './WeatherVisualizations/TimeSeries';
 
 const WeatherVisualizations = ({ data }) => {
-  const tempData = data.map((d, i) => ({ x: i, y: d.temp }));
-  const rhumData = data.map((d, i) => ({ x: i, y: d.rhum }));
+  try {
+    const tempData = data.map((d, i) => ({ x: i, y: d.temp }));
+    const rhumData = data.map((d, i) => ({ x: i, y: d.rhum }));
 
-  return (
-    <div className="space-y-8">
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Temperature Over Time</h3>
-        <VictoryChart theme={VictoryTheme.material}>
-          <VictoryAxis
-            label="Time Index"
-            style={{
-              tickLabels: { fontSize: 8 }
-            }}
-          />
-          <VictoryAxis
-            dependentAxis
-            label="Temperature (°C)"
-            style={{
-              tickLabels: { fontSize: 8 }
-            }}
-          />
-          <VictoryLine
-            data={tempData}
-            style={{
-              data: { stroke: "#c43a31" },
-            }}
-          />
-        </VictoryChart>
-      </div>
+    // Prepare data for boxplots
+    const boxplotData = [
+      { x: 'Temperature', y: data.map(d => d.temp) },
+      { x: 'Humidity', y: data.map(d => d.rhum) }
+    ];
 
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Humidity Over Time</h3>
-        <VictoryChart theme={VictoryTheme.material}>
-          <VictoryAxis
-            label="Time Index"
-            style={{
-              tickLabels: { fontSize: 8 }
-            }}
-          />
-          <VictoryAxis
-            dependentAxis
-            label="Humidity (%)"
-            style={{
-              tickLabels: { fontSize: 8 }
-            }}
-          />
-          <VictoryLine
-            data={rhumData}
-            style={{
-              data: { stroke: "#00bcd4" },
-            }}
-          />
-        </VictoryChart>
+    // Prepare scatter plot data
+    const scatterData = data.map(d => ({
+      x: d.temp,
+      y: d.rhum
+    }));
+
+    return (
+      <div className="space-y-8">
+        <BoxPlots boxplotData={boxplotData} />
+        <Histograms data={data} />
+        <ScatterPlot scatterData={scatterData} />
+        <TimeSeries tempData={tempData} rhumData={rhumData} />
       </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error('Error rendering visualizations:', error);
+    Sentry.captureException(error);
+    return <div className="text-red-500">Error loading visualizations. Please try again later.</div>;
+  }
 };
 
 export default WeatherVisualizations;
