@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { fetchWeatherData } from './fetchWeatherData';
 import { trainModel } from './trainModel';
 import * as Sentry from '@sentry/browser';
+import WeatherVisualizations from './WeatherVisualizations';
+import PredictionResults from './PredictionResults';
+import ControlButtons from './ControlButtons';
 
 const WeatherPredictor = () => {
   const [data, setData] = useState(null);
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [training, setTraining] = useState(false);
+  const [showEDA, setShowEDA] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,32 +43,18 @@ const WeatherPredictor = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="text-center py-8">Loading historical data...</div>;
 
   return (
-    <div className="p-4">
-      <button
-        onClick={handleTrainModel}
-        disabled={training}
-        className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {training ? 'Training...' : 'Predict Next Week\'s Weather'}
-      </button>
-
-      {predictions.length > 0 && (
-        <div className="mt-4">
-          <h2 className="text-xl font-bold mb-2">Predictions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {predictions.map((pred, i) => (
-              <div key={i} className="bg-white p-4 rounded-lg shadow">
-                <h3 className="font-semibold">{pred.day.toLocaleDateString()}</h3>
-                <p>Temperature: {pred.temp.toFixed(1)}°C</p>
-                <p>Humidity: {pred.rhum.toFixed(1)}%</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+    <div className="p-4 space-y-6">
+      <ControlButtons 
+        showEDA={showEDA} 
+        setShowEDA={setShowEDA} 
+        handleTrainModel={handleTrainModel} 
+        training={training}
+      />
+      {showEDA && data && <WeatherVisualizations data={data} />}
+      {predictions.length > 0 && <PredictionResults predictions={predictions} />}
     </div>
   );
 };
