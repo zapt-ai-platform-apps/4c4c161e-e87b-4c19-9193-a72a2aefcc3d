@@ -1,12 +1,12 @@
-import { LinearRegression } from 'ml-regression';
+import { SimpleLinearRegression } from 'ml-regression';
 
 const trainModel = (data) => {
   const x = data.map((d, i) => i);
   const yTemp = data.map(d => d.temp);
   const yRhum = data.map(d => d.rhum);
 
-  const modelTemp = new LinearRegression(x, yTemp);
-  const modelRhum = new LinearRegression(x, yRhum);
+  const modelTemp = new SimpleLinearRegression(x, yTemp);
+  const modelRhum = new SimpleLinearRegression(x, yRhum);
 
   const nextDays = Array.from({ length: 7 }, (_, i) => data.length + i);
   const predictedTemp = nextDays.map(day => modelTemp.predict(day));

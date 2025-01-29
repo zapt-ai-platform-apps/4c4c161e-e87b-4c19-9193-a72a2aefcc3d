@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { fetchWeatherData } from './fetchWeatherData';
 import { trainModel } from './trainModel';
+import * as Sentry from '@sentry/browser';
 
 const WeatherPredictor = () => {
   const [data, setData] = useState(null);
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [training, setTraining] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,10 +25,18 @@ const WeatherPredictor = () => {
     fetchData();
   }, []);
 
-  const handleTrainModel = () => {
+  const handleTrainModel = async () => {
     if (!data) return;
-    const newPredictions = trainModel(data);
-    setPredictions(newPredictions);
+    setTraining(true);
+    try {
+      const newPredictions = trainModel(data);
+      setPredictions(newPredictions);
+    } catch (error) {
+      console.error('Error training model:', error);
+      Sentry.captureException(error);
+    } finally {
+      setTraining(false);
+    }
   };
 
   if (loading) return <div>Loading...</div>;
@@ -35,9 +45,10 @@ const WeatherPredictor = () => {
     <div className="p-4">
       <button
         onClick={handleTrainModel}
-        className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer"
+        disabled={training}
+        className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Predict Next Week's Weather
+        {training ? 'Training...' : 'Predict Next Week\'s Weather'}
       </button>
 
       {predictions.length > 0 && (
